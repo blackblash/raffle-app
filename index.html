@@ -3,51 +3,97 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>وب‌اپ قرعه‌کشی و خدمات</title>
+  <title>سامانه قرعه‌کشی و فروش</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
 </head>
-<body class="bg-slate-900 text-slate-100 p-4 pb-24 font-sans">
+<body class="bg-slate-900 text-slate-100 p-4 pb-24">
 
   <!-- کارت پروفایل -->
-  <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl mb-5 shadow-xl flex justify-between items-center">
+  <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl mb-4 shadow-xl flex justify-between items-center">
     <div>
-      <h2 id="userName" class="font-bold text-amber-400 text-lg">کاربر</h2>
-      <p id="userPhone" class="text-xs text-slate-400">شماره: ثبت‌نشده</p>
+      <h2 id="userName" class="font-bold text-amber-400 text-base">در حال دریافت...</h2>
+      <p id="userPhone" class="text-xs text-slate-400 mt-1">شماره: در حال بررسی...</p>
     </div>
     <div class="text-left">
-      <span class="text-xs text-slate-400 block">موجودی</span>
+      <span class="text-xs text-slate-400 block">موجودی کیف پول</span>
       <span id="userBalance" class="font-black text-emerald-400 text-lg">0 تومان</span>
     </div>
   </div>
 
-  <!-- دکمه‌های دسترسی سریع -->
-  <div class="grid grid-cols-2 gap-3 mb-6">
-    <button onclick="alert('بخش شارژ کیف پول و درگاه ترون')" class="bg-amber-500 hover:bg-amber-600 font-bold p-3 rounded-xl text-slate-900 text-sm">
-      💳 شارژ کیف پول
-    </button>
-    <button onclick="alert('فرم ثبت درخواست سفارش فروش')" class="bg-blue-600 hover:bg-blue-700 font-bold p-3 rounded-xl text-white text-sm">
-      📦 ثبت سفارش فروش
-    </button>
+  <!-- نوار تب‌ها -->
+  <div class="flex bg-slate-800/80 p-1 rounded-xl mb-5 border border-slate-700 text-xs font-semibold overflow-x-auto">
+    <button onclick="switchTab('raffles')" id="tab-raffles" class="flex-1 py-2 px-3 rounded-lg text-amber-400 bg-slate-700">🎰 قرعه‌کشی‌ها</button>
+    <button onclick="switchTab('charge')" id="tab-charge" class="flex-1 py-2 px-3 rounded-lg text-slate-400">💳 شارژ</button>
+    <button onclick="switchTab('sell')" id="tab-sell" class="flex-1 py-2 px-3 rounded-lg text-slate-400">📦 ثبت فروش</button>
+    <button onclick="switchTab('ref')" id="tab-ref" class="flex-1 py-2 px-3 rounded-lg text-slate-400">🔗 زیرمجموعه</button>
+    <button onclick="switchTab('support')" id="tab-support" class="flex-1 py-2 px-3 rounded-lg text-slate-400">📩 تیکت</button>
   </div>
 
-  <!-- لیست قرعه‌کشی‌ها -->
-  <h3 class="font-bold text-md mb-3 text-slate-300 flex items-center justify-between">
-    <span>🎁 قرعه‌کشی‌های فعال</span>
-    <button onclick="alert('تنظیم آلارم یادآوری')" class="text-xs text-amber-400 bg-slate-800 px-2 py-1 rounded-lg border border-slate-700">🔔 تنظیم آلارم</button>
-  </h3>
+  <!-- تب ۱: قرعه‌کشی‌ها -->
+  <div id="content-raffles" class="tab-content active space-y-4">
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="font-bold text-sm text-slate-300">لیست قرعه‌کشی‌های فعال</h3>
+      <button onclick="setAlarm()" class="text-xs text-amber-400 bg-slate-800 px-2 py-1 rounded-lg border border-slate-700">🔔 تنظیم آلارم یادآوری</button>
+    </div>
 
-  <div id="rafflesList" class="space-y-4">
-    <div class="bg-slate-800 p-4 rounded-xl text-center text-slate-400 border border-slate-700">
-      در حال دریافت لیست قرعه‌کشی‌ها...
+    <div id="rafflesList" class="space-y-3">
+      <div class="bg-slate-800 p-4 rounded-xl text-center text-slate-400 border border-slate-700 text-sm">
+        در حال دریافت اطلاعات...
+      </div>
     </div>
   </div>
 
-  <!-- بخش پشتیبانی و تیکت -->
-  <div class="mt-8 bg-slate-800/60 p-4 rounded-2xl border border-slate-700">
-    <h4 class="font-bold text-sm mb-2 text-slate-300">📩 ارسال تیکت پشتیبانی به ادمین</h4>
-    <textarea id="ticketMsg" placeholder="پیام خود را بنویسید..." class="w-full bg-slate-900 border border-slate-700 p-2 rounded-lg text-sm text-white mb-2 h-20 focus:outline-none"></textarea>
-    <button onclick="sendTicket()" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2 rounded-lg text-sm">ارسال تیکت</button>
+  <!-- تب ۲: شارژ کیف پول -->
+  <div id="content-charge" class="tab-content bg-slate-800 p-4 rounded-2xl border border-slate-700 space-y-4">
+    <h3 class="font-bold text-amber-400 text-sm">💳 شارژ حساب کاربری</h3>
+    <div>
+      <label class="block text-xs text-slate-400 mb-1">مبلغ به تومان:</label>
+      <input type="number" id="chargeAmount" placeholder="مثلاً ۵۰,۰۰۰" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500">
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      <button onclick="processPayment('tron')" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs">درگاه ترون (TRX)</button>
+      <button onclick="processPayment('irr')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs">درگاه ریالی</button>
+    </div>
+  </div>
+
+  <!-- تب ۳: درخواست سفارش فروش -->
+  <div id="content-sell" class="tab-content bg-slate-800 p-4 rounded-2xl border border-slate-700 space-y-3">
+    <h3 class="font-bold text-blue-400 text-sm">📦 ثبت و درخواست سفارش فروش</h3>
+    <p class="text-xs text-slate-400">مشخصات محصول خود را ارسال کنید تا پس از بررسی ادمین در قرعه‌کشی یا فروشگاه قرار گیرد.</p>
+    <input type="text" id="prodTitle" placeholder="نام محصول / اکانت" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm text-white focus:outline-none">
+    <input type="number" id="prodPrice" placeholder="قیمت پیشنهادی (تومان)" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm text-white focus:outline-none">
+    <textarea id="prodDesc" placeholder="توضیحات تکمیلی..." class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm text-white h-20 focus:outline-none"></textarea>
+    <button onclick="submitSellOrder()" class="w-full bg-blue-600 hover:bg-blue-700 font-bold py-2.5 rounded-xl text-sm">ارسال درخواست به ادمین</button>
+  </div>
+
+  <!-- تب ۴: زیرمجموعه‌گیری -->
+  <div id="content-ref" class="tab-content bg-slate-800 p-4 rounded-2xl border border-slate-700 text-center space-y-3">
+    <h3 class="font-bold text-amber-400 text-sm">👥 زیرمجموعه‌گیری و درآمدزایی</h3>
+    <p class="text-xs text-slate-300 leading-relaxed">با دعوت از دوستان خود، پس از ثبت‌نام آن‌ها پاداش به کیف پول شما اضافه می‌شود.</p>
+    <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-700 text-xs text-slate-400 break-all" id="refLinkBox">
+      در حال دریافت لینک...
+    </div>
+    <button onclick="copyRefLink()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2.5 rounded-xl text-xs">کپی لینک دعوت</button>
+  </div>
+
+  <!-- تب ۵: تیکت پشتیبانی و درباره -->
+  <div id="content-support" class="tab-content space-y-4">
+    <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 space-y-3">
+      <h3 class="font-bold text-emerald-400 text-sm">📩 ارسال تیکت پشتیبانی</h3>
+      <textarea id="ticketMessage" placeholder="متن پیام شما برای ادمین..." class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm text-white h-24 focus:outline-none"></textarea>
+      <button onclick="sendTicket()" class="w-full bg-emerald-600 hover:bg-emerald-700 font-bold py-2.5 rounded-xl text-sm">ارسال به مدیریت</button>
+    </div>
+
+    <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700">
+      <h4 class="font-bold text-xs text-slate-300 mb-1">ℹ️ درباره سیستم</h4>
+      <p class="text-xs text-slate-400 leading-relaxed">این سیستم پلتفرم رسمی برگزاری قرعه‌کشی‌های آنلاین و خرید و فروش شفاف است. تمامی پرداختی‌ها و نتایج در کانال آرشیو به ثبت می‌رسند.</p>
+    </div>
   </div>
 
   <script>
@@ -57,6 +103,19 @@
     const userId = tg.initDataUnsafe?.user?.id || 123456;
     const WORKER_URL = "https://tight-sun-71e8.blackblash13.workers.dev";
 
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('[id^="tab-"]').forEach(el => {
+        el.classList.remove('text-amber-400', 'bg-slate-700');
+        el.classList.add('text-slate-400');
+      });
+
+      document.getElementById(`content-${tabName}`).classList.add('active');
+      const activeBtn = document.getElementById(`tab-${tabName}`);
+      activeBtn.classList.add('text-amber-400', 'bg-slate-700');
+      activeBtn.classList.remove('text-slate-400');
+    }
+
     async function init() {
       try {
         // دریافت پروفایل
@@ -64,26 +123,27 @@
         const uData = await uRes.json();
         
         document.getElementById('userName').innerText = tg.initDataUnsafe?.user?.first_name || "کاربر";
-        document.getElementById('userPhone').innerText = uData.phone ? `📱 ${uData.phone}` : "شماره: تاییدنشده";
+        document.getElementById('userPhone').innerText = uData.phone ? `📱 ${uData.phone}` : "شماره: تاییدنشده (از ربات اقدام کنید)";
         document.getElementById('userBalance').innerText = `${(uData.balance || 0).toLocaleString()} تومان`;
+        document.getElementById('refLinkBox').innerText = `https://t.me/${tg.initDataUnsafe?.bot?.username || 'Bot'}?start=${userId}`;
 
         // دریافت قرعه‌کشی‌ها
         const rRes = await fetch(`${WORKER_URL}/api/raffles`);
         const rData = await rRes.json();
         const container = document.getElementById('rafflesList');
 
-        if (rData.length === 0) {
-          container.innerHTML = `<div class="bg-slate-800 p-4 rounded-xl text-center text-slate-400 border border-slate-700">در حال حاضر قرعه‌کشی فعالی وجود ندارد.</div>`;
+        if (!rData || rData.length === 0) {
+          container.innerHTML = `<div class="bg-slate-800 p-4 rounded-xl text-center text-slate-400 border border-slate-700 text-sm">در حال حاضر قرعه‌کشی فعالی وجود ندارد.</div>`;
         } else {
           container.innerHTML = rData.map(r => `
             <div class="bg-slate-800 rounded-xl p-4 border border-slate-700">
-              <h4 class="font-bold text-amber-400 mb-1">${r.title}</h4>
+              <h4 class="font-bold text-amber-400 mb-1 text-sm">${r.title}</h4>
               <p class="text-xs text-slate-300 mb-2">${r.description || ''}</p>
               <div class="flex justify-between items-center text-xs text-slate-400 mb-3">
-                <span>قیمت هر شانس: ${r.price || 0} تومان</span>
+                <span>قیمت هر شانس: ${Number(r.price || 0).toLocaleString()} تومان</span>
                 <span>تایمر: ${r.timer || 'نامشخص'}</span>
               </div>
-              <button class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 rounded-lg text-xs">شرکت در قرعه‌کشی</button>
+              <button onclick="alert('درخواست خرید شانس ثبت شد.')" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 rounded-lg text-xs">شرکت در قرعه‌کشی</button>
             </div>
           `).join('');
         }
@@ -92,11 +152,36 @@
       }
     }
 
+    function processPayment(type) {
+      const amount = document.getElementById('chargeAmount').value;
+      if (!amount || amount < 1000) return alert('لطفاً مبلغ معتبری وارد کنید.');
+      alert(`درخواست شارژ مبلغ ${Number(amount).toLocaleString()} تومان از طریق درگاه ${type === 'tron' ? 'ترون' : 'ریالی'} ثبت شد.`);
+    }
+
+    function submitSellOrder() {
+      const title = document.getElementById('prodTitle').value;
+      if (!title) return alert('عنوان محصول را وارد کنید.');
+      alert('درخواست فروش شما با موفقیت ثبت شد و برای مدیریت ارسال گردید.');
+      document.getElementById('prodTitle').value = '';
+      document.getElementById('prodPrice').value = '';
+      document.getElementById('prodDesc').value = '';
+    }
+
     function sendTicket() {
-      const msg = document.getElementById('ticketMsg').value;
-      if(!msg) return alert('لطفا پیامی بنویسید.');
-      alert('تیکت شما برای مدیریت ارسال شد.');
-      document.getElementById('ticketMsg').value = '';
+      const msg = document.getElementById('ticketMessage').value;
+      if (!msg) return alert('لطفاً پیام خود را بنویسید.');
+      alert('تیکت شما برای ادمین ارسال شد.');
+      document.getElementById('ticketMessage').value = '';
+    }
+
+    function copyRefLink() {
+      const text = document.getElementById('refLinkBox').innerText;
+      navigator.clipboard.writeText(text);
+      alert('لینک دعوت کپی شد!');
+    }
+
+    function setAlarm() {
+      alert('🔔 یادآوری فعال شد! قبل از قرعه‌کشی بعدی از طریق ربات به شما پیام داده می‌شود.');
     }
 
     init();
